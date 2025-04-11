@@ -1,53 +1,97 @@
-// Модель товара
+/**
+ * Типы данных приложения
+ */
+
+/** 
+ * Товар в каталоге 
+ */
 export interface IProduct {
-    id: string;
-    title: string;
-    description: string;
-    image: string;
-    category: string;
-    price: number | null;
-  }
- 
-// Состояние корзины
-  export interface IBasket {
-    items: string[];
-    total: number;
-  }
-
-// Данные заказа
-  export interface IOrder {
-    payment: 'card' | 'cash';
-    address: string;
-    email: string;
-    phone: string;
-    items: string[];
-    total: number;
-  }
-
-// Результат оформления заказа 
-  export interface IOrderResult {
-    id: string;
-    total: number;
-  }
- 
-// Состояние формы
-  export interface IFormState {
-    valid: boolean;
-    errors: string[];
-  }
+  /** Уникальный идентификатор товара */
+  id: string;
+  /** Название товара */
+  title: string;
+  /** Полное описание товара */
+  description: string;
+  /** URL изображения товара */
+  image: string;
+  /** Категория товара */
+  category: string;
+  /** Цена товара (null если нет в наличии) */
+  price: number | null;
+}
 
 /**
- * Дополнительные типы для компонентов
+ * Состояние корзины
  */
-  export interface ICardActions {
-    onClick: (event: MouseEvent) => void;
-  }
+export interface IBasket {
+  /** Массив идентификаторов товаров в корзине */
+  items: string[];
+  /** Общая сумма заказа */
+  total: number;
+}
+
+/** 
+ * Способ оплаты 
+ */
+export type PaymentMethod = 'card' | 'cash';
+
+/**
+ * Данные заказа
+ */
+export interface IOrder {
+  /** Способ оплаты */
+  payment: PaymentMethod;
+  /** Email покупателя */
+  email: string;
+  /** Телефон покупателя */
+  phone: string;
+  /** Адрес доставки */
+  address: string;
+  /** Массив идентификаторов товаров */
+  items: string[];
+  /** Сумма заказа */
+  total: number;
+}
+
+/**
+ * Результат оформления заказа
+ */
+export interface IOrderResult {
+  /** Идентификатор заказа */
+  id: string;
+  /** Сумма заказа */
+  total: number;
+}
+
+/**
+ * Ошибки формы
+ */
+export interface IFormErrors {
+  /** Ошибка поля email */
+  email?: string;
+  /** Ошибка поля телефон */
+  phone?: string;
+  /** Ошибка поля адрес */
+  address?: string;
+  /** Общая ошибка формы */
+  payment?: string;
+}
+
+/**
+ * Интерфейс системы событий
+ */
+export interface IEvents {
+  /**
+   * Подписаться на событие
+   * @param event Имя события
+   * @param callback Функция-обработчик
+   */
+  on(event: string, callback: Function): void;
   
-  export interface ISuccessActions {
-    onClick: () => void;
-  }
- 
-// Тип для данных модального окна
-  export interface IModalData {
-    content: HTMLElement;
-  }
+  /**
+   * Сгенерировать событие
+   * @param event Имя события
+   * @param data Данные события
+   */
+  emit(event: string, data?: unknown): void;
+}
