@@ -1,9 +1,5 @@
 /**
- * Типы данных приложения
- */
-
-/** 
- * Товар в каталоге 
+ * Товар в каталоге
  */
 export interface IProduct {
   /** Уникальный идентификатор товара */
@@ -18,6 +14,8 @@ export interface IProduct {
   category: string;
   /** Цена товара (null если нет в наличии) */
   price: number | null;
+  /** Добавлен ли товар в корзину (для UI) */
+  inBasket?: boolean;
 }
 
 /**
@@ -30,27 +28,33 @@ export interface IBasket {
   total: number;
 }
 
-/** 
- * Способ оплаты 
+/**
+ * Способ оплаты
  */
 export type PaymentMethod = 'card' | 'cash';
 
 /**
- * Данные заказа
+ * Данные заказа - полные
  */
-export interface IOrder {
-  /** Способ оплаты */
-  payment: PaymentMethod;
-  /** Email покупателя */
-  email: string;
-  /** Телефон покупателя */
-  phone: string;
-  /** Адрес доставки */
-  address: string;
+export interface IOrder extends IOrderForm {
   /** Массив идентификаторов товаров */
   items: string[];
   /** Сумма заказа */
   total: number;
+}
+
+/**
+ * Данные формы заказа (поля для заполнения)
+ */
+export interface IOrderForm {
+    /** Способ оплаты */
+    payment: PaymentMethod;
+    /** Email покупателя */
+    email: string;
+    /** Телефон покупателя */
+    phone: string;
+    /** Адрес доставки */
+    address: string;
 }
 
 /**
@@ -64,18 +68,10 @@ export interface IOrderResult {
 }
 
 /**
- * Ошибки формы
+ * Ошибки формы заказа (ключи соответствуют IOrderForm)
  */
-export interface IFormErrors {
-  /** Ошибка поля email */
-  email?: string;
-  /** Ошибка поля телефон */
-  phone?: string;
-  /** Ошибка поля адрес */
-  address?: string;
-  /** Общая ошибка формы */
-  payment?: string;
-}
+export type IFormErrors = Partial<Record<keyof IOrderForm, string>>;
+
 
 /**
  * Интерфейс системы событий
@@ -83,15 +79,65 @@ export interface IFormErrors {
 export interface IEvents {
   /**
    * Подписаться на событие
-   * @param event Имя события
+   * @param event Имя события или регулярное выражение
    * @param callback Функция-обработчик
    */
-  on(event: string, callback: Function): void;
-  
+  on<T extends object>(event: string | RegExp, callback: (data: T) => void): void;
   /**
    * Сгенерировать событие
    * @param event Имя события
    * @param data Данные события
    */
-  emit(event: string, data?: unknown): void;
+  emit<T extends object>(event: string, data?: T): void;
+   /**
+    * Вернуть триггер для события
+    * @param event Имя события
+    * @param context Дополнительные данные для события
+    */
+  trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void;
 }
+
+// --- Дополнительные типы для UI ---
+
+/** Данные для отображения в модальном окне */
+export interface IModalData {
+  content: HTMLElement;
+}
+
+/** Состояние главной страницы */
+export interface IPage {
+	counter: number; // Счетчик товаров в корзине
+	catalog: HTMLElement[]; // Элементы каталога
+	locked: boolean; // Блокировка прокрутки
+}
+
+/** Общее состояние формы (валидность и ошибки) */
+export interface IFormState {
+	valid: boolean;
+	errors: string[];
+}
+
+/** Действия для карточки */
+export interface ICardActions {
+	onClick: (event: MouseEvent) => void;
+}
+
+/** Данные для компонента успеха */
+export interface ISuccess {
+    total: number;
+}
+
+/** Действия для компонента успеха */
+export interface ISuccessActions {
+    onClick: () => void;
+}
+
+// --- Типы для API ---
+/** Ответ API со списком */
+export type ApiListResponse<Type> = {
+    total: number,
+    items: Type[]
+};
+
+/** HTTP методы для POST запросов */
+export type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
