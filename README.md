@@ -92,30 +92,34 @@ Model-View-Presenter (MVP)
 Центральное хранилище состояния приложения.
 
 **Конструктор:**
-```typescript
+```ts
 constructor(protected events: IEvents)
 ```
-- `events` - брокер событий
 
 **Методы:**
-- `clearState()` - полный сброс состояния
-- `setItems(items: IProduct[])` - установка списка товаров
+- `setCatalog(items: IProduct[])` - установка списка товаров
+- `setPreview(item: IProduct)` - установка текущего просматриваемого товара
+- `isInBasket(itemId: string)` - проверка наличия товара в корзине
 - `addToBasket(item: IProduct)` - добавление товара в корзину
 - `removeFromBasket(itemId: string)` - удаление товара из корзины
+- `clearBasket()` - очистка корзины
+- `setOrderField(field: keyof IOrderForm, value: string)` - установка поля заказа
+- `validateOrderStep1()` - валидация первого шага заказа
+- `validateOrderStep2()` - валидация второго шага заказа
+- `getOrder()` - получение данных заказа
 
-### Класс `WebLarekApi`
+### Класс `WebLarekAPI`
 API клиент для работы с сервером.
 
 **Конструктор:**
-```typescript
-constructor(private baseUrl: string, private cdnUrl: string)
+```ts
+constructor(cdn: string, baseUrl: string, options?: RequestInit)
 ```
-- `baseUrl` - базовый URL API
-- `cdnUrl` - URL CDN для изображений
 
 **Методы:**
 - `getProductList(): Promise<IProduct[]>` - получение списка товаров
-- `createOrder(order: IOrder): Promise<IOrderResult>` - оформление заказа
+- `getProductItem(id: string): Promise<IProduct>` - получение товара по ID
+- `orderProducts(order: IOrder): Promise<IOrderResult>` - оформление заказа
 
 ## Базовые компоненты
 
@@ -123,76 +127,99 @@ constructor(private baseUrl: string, private cdnUrl: string)
 Базовый класс для всех компонентов.
 
 **Конструктор:**
-```typescript
-constructor(protected container: HTMLElement)
+```ts
+constructor(container: HTMLElement)
 ```
-- `container` - родительский DOM-элемент
 
 **Методы:**
-- `setText(element: HTMLElement, value: unknown)` - установка текста
-- `setImage(element: HTMLImageElement, src: string, alt: string)` - установка изображения
-- `setDisabled(element: HTMLElement, state: boolean)` - блокировка элемента
+- `toggleClass(className, force)` - переключение класса
+- `setText(element, value)` - установка текста
+- `setDisabled(element, state)` - блокировка элемента
+- `setHidden(element)` / `setVisible(element)` - управление видимостью
+- `setImage(element, src, alt)` - установка изображения
+- `render(data)` - обновление данных компонента
 
 ### Класс `EventEmitter`
-Брокер событий (реализует паттерн Наблюдатель).
-
-**Конструктор:**
-```typescript
-constructor()
-```
+Брокер событий.
 
 **Методы:**
-- `on(event: string, callback: Function)` - подписка на событие
-- `emit(event: string, ...args: unknown[])` - генерация события
+- `on(event, callback)` - подписка на событие
+- `off(event, callback)` - отписка от события
+- `emit(event, data)` - генерация события
+- `onAll(callback)` - подписка на все события
+- `trigger(event, context)` - создание триггера события
 
 ## Компоненты представления
 
 ### Класс `Card`
-Компонент карточки товара.
 
 **Конструктор:**
-```typescript
-constructor(container: HTMLElement)
+```ts
+constructor(container: HTMLElement, actions?: ICardActions)
 ```
-- `container` - DOM-элемент карточки
 
-**Свойства:**
-- `price` - сеттер для установки цены (блокирует кнопку если цена null)
+**Свойства и методы:**
+- `title`, `price`, `image`, `category` — сеттеры для данных
+- `buttonText` — текст кнопки
+- `index` — номер в корзине
+- `setInBasket(inBasket, price)` — состояние кнопки
 
 ### Класс `Basket`
-Компонент корзины товаров.
 
 **Конструктор:**
-```typescript
-constructor(container: HTMLElement, events: EventEmitter)
+```ts
+constructor(container: HTMLElement, events: IEvents)
 ```
-- `container` - DOM-элемент корзины
-- `events` - брокер событий
-
-**Методы:**
-- `render()` - отрисовка содержимого корзины
-
-### Класс `Order`
-Компонент формы заказа.
-
-**Конструктор:**
-```typescript
-constructor(container: HTMLFormElement, events: EventEmitter)
-```
-- `container` - форма заказа
-- `events` - брокер событий
 
 **Свойства:**
-- `address` - сеттер для установки адреса
+- `items` — список товаров в корзине
+- `total` — общая сумма
+
+### Класс `Order`
+
+**Конструктор:**
+```ts
+constructor(container: HTMLFormElement, events: IEvents)
+```
+
+**Свойства:**
+- `payment`, `address`
+- `render(state)`
+
+### Класс `Contacts`
+
+**Конструктор:**
+```ts
+constructor(container: HTMLFormElement, events: IEvents)
+```
+
+**Свойства:**
+- `email`, `phone`
+- `render(state)`
+
+### Класс `Success`
+
+**Конструктор:**
+```ts
+constructor(container: HTMLElement, actions: ISuccessActions)
+```
+
+**Свойства:**
+- `total`
 
 ## Система событий
 
 | Событие | Описание |
-|---------|----------|
-| `items:changed` | Изменение списка товаров |
-| `basket:changed` | Изменение содержимого корзины |
-| `order:open` | Открытие формы заказа |
-| `order:submit` | Отправка заказа |
-| `modal:open` | Открытие модального окна |
-| `modal:close` | Закрытие модального окна |
-| `state:cleared` | Сброс состояния приложения |
+|--------|----------|
+| `items:changed` | Каталог обновлён |
+| `card:select` | Выбор товара |
+| `preview:changed` | Обновление превью |
+| `basket:changed` | Изменение корзины |
+| `basket:open` | Открытие корзины |
+| `order:start` | Начало оформления |
+| `order.submit` | Сабмит формы заказа |
+| `contacts.submit` | Сабмит формы контактов |
+| `formErrors:change` | Изменение ошибок формы |
+| `modal:open` | Открытие модалки |
+| `modal:close` | Закрытие модалки |
+| `state:cleared` | Очистка состояния приложения |
