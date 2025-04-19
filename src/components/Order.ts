@@ -32,6 +32,10 @@ export class Order extends Form<IOrderForm> {
                 value: this._address.value
             });
         });
+        this.container.addEventListener('submit', (event) => {
+            event.preventDefault(); // Предотвращаем отправку формы
+            events.emit('order:submit'); // Переход к шагу 2
+        });
     }
 
     set payment(value: PaymentMethod) {
