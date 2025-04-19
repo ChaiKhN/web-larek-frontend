@@ -27,6 +27,10 @@ export class Contacts extends Form<IOrderForm> {
                 value: this._phone.value
             });
         });
+        this.container.addEventListener('submit', (event) => {
+            event.preventDefault();
+            this.events.emit('contacts:submit');
+        });
     }
 
     // Явно объявляем свойства
