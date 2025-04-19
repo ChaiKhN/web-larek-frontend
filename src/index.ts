@@ -2,7 +2,7 @@ import './scss/styles.scss';
 import { AppState } from './components/base/AppState';
 // import { Api } from './components/base/api'; // Базовый класс больше не нужен напрямую
 import { EventEmitter } from './components/base/events';
-import { WebLarekAPI } from './components/WebLarekAPI'; // Используем наш расширенный API класс
+import { WebLarekAPI } from './components/WebLarekAPI'; // Используем расширенный API класс
 import { Page } from './components/Page';
 import { Card } from './components/Card';
 import { Modal } from './components/common/Modal';
@@ -18,7 +18,7 @@ import { cloneTemplate, ensureElement } from './utils/utils';
 
 // --- Инициализация основных модулей ---
 const events = new EventEmitter();
-const api = new WebLarekAPI(CDN_URL, API_URL); // Используем наш класс API
+const api = new WebLarekAPI(CDN_URL, API_URL); // Используем класс API
 const appState = new AppState(events);
 
 // --- Получение ссылок на шаблоны ---
