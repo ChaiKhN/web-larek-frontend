@@ -3,36 +3,53 @@ import { IOrderForm, IFormState } from "../types";
 import { IEvents } from "./base/events";
 import { ensureElement } from "../utils/utils";
 
-/**
- * Компонент формы заказа - Шаг 2 (Контакты)
- */
 export class Contacts extends Form<IOrderForm> {
-    private _emailInput: HTMLInputElement;
-    private _phoneInput: HTMLInputElement;
+    protected _email: HTMLInputElement;
+    protected _phone: HTMLInputElement;
 
     constructor(container: HTMLFormElement, events: IEvents) {
-        super(container, events); // Передаем контейнер и события в базовый класс Form
+        super(container, events, 'contacts');
+        
+        this._email = ensureElement<HTMLInputElement>('input[name="email"]', container);
+        this._phone = ensureElement<HTMLInputElement>('input[name="phone"]', container);
 
-        // Находим элементы управления этого шага
-        this._emailInput = ensureElement<HTMLInputElement>('input[name=email]', container);
-        this._phoneInput = ensureElement<HTMLInputElement>('input[name=phone]', container);
+        // Обработчики изменений полей
+        this._email.addEventListener('input', () => {
+            this.events.emit('contacts.email:change', {
+                field: 'email',
+                value: this._email.value
+            });
+        });
+
+        this._phone.addEventListener('input', () => {
+            this.events.emit('contacts.phone:change', {
+                field: 'phone',
+                value: this._phone.value
+            });
+        });
     }
 
-    // Сеттеры для установки начальных/текущих значений полей
+    // Явно объявляем свойства
     set email(value: string) {
-        this._emailInput.value = value;
-    }
-    set phone(value: string) {
-        this._phoneInput.value = value;
+        this._email.value = value;
     }
 
-     // Переопределяем render базового класса Form
+    get email(): string {
+        return this._email.value;
+    }
+
+    set phone(value: string) {
+        this._phone.value = value;
+    }
+
+    get phone(): string {
+        return this._phone.value;
+    }
+
     render(state: IFormState & Partial<IOrderForm>): HTMLElement {
-        // Сначала вызываем render базового класса, чтобы установить valid и errors
         super.render(state);
-        // Затем устанавливаем значения полей этой формы
-        this.email = state.email ?? '';
-        this.phone = state.phone ?? '';
+        if (state.email) this.email = state.email;
+        if (state.phone) this.phone = state.phone;
         return this.container;
     }
 }
